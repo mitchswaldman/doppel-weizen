@@ -42,7 +42,7 @@ var redRect = new Path.Rectangle(
 	view.bounds.bottomRight + new Point(500, 500));
 redRect.fillColor = '#FE0000';
 
-var greyRect = new Path.Rectangle(new Point(stemExtension.bounds.topLeft.x, -500), 
+var greyRect = new Path.Rectangle(new Point(stemExtension.bounds.topLeft.x, -100), 
 	new Point(view.bounds.topRight.x + 500, doppelText.bounds.topRight.y));
 greyRect.fillColor = '#FAFAEE';
 
@@ -119,22 +119,20 @@ var plantGroup2 = createPlant(greyRect.bounds.bottomCenter, 5);
 plantGroup2.rotate(180, plantGroup2.bounds.bottomCenter);
 var plantGroup3 = createPlant(redRect.bounds.topLeft + new Point(doppelText.bounds.size.width/2, 0), 6);
 
-var textGroup = new Group();
-textGroup.addChild(plantGroup1);
-textGroup.addChild(plantGroup2);
-textGroup.addChild(plantGroup3);
-textGroup.addChild(doppelText);
-textGroup.addChild(weizenText);
-textGroup.addChild(backwardsP);
-textGroup.addChild(stemExtension);
-textGroup.addChild(yellowRect);
-textGroup.addChild(blueRect);
-textGroup.addChild(redRect);
-textGroup.addChild(greyRect);
-textGroup.addChild(yellowCircle1);
-textGroup.addChild(yellowCircle2);
-textGroup.addChild(yellowCircle3);
-textGroup.rotate(-31, view.center);
+var textGroup = new Group(doppelText, weizenText, backwardsP, stemExtension);
+var animationGroup = new Group();
+animationGroup.addChild(plantGroup1);
+animationGroup.addChild(plantGroup2);
+animationGroup.addChild(plantGroup3);
+animationGroup.addChild(textGroup);
+animationGroup.addChild(yellowRect);
+animationGroup.addChild(blueRect);
+animationGroup.addChild(redRect);
+animationGroup.addChild(greyRect);
+animationGroup.addChild(yellowCircle1);
+animationGroup.addChild(yellowCircle2);
+animationGroup.addChild(yellowCircle3);
+animationGroup.rotate(-31, view.center);
 
 var blackFrame = new Path.Rectangle({
 	from : view.bounds.topLeft + new Point(20, 20), 
@@ -142,7 +140,34 @@ var blackFrame = new Path.Rectangle({
 	fillColor : null,
 	strokeWidth : 3,
 	strokeColor: 'black'
-})
+});
+
+var endingSizes = {
+	redRect : redRect.bounds.size.clone(),
+	yellowRect : yellowRect.bounds.size.clone(),
+	greyRect : greyRect.bounds.size.clone(),
+	blueRect : blueRect.bounds.size.clone(),
+}
+var rectGrowRate = 6;
+redRect.bounds.size.height = 1;
+yellowRect.bounds.size.height = 1;
+greyRect.bounds.size.height = 1;
+blueRect.bounds.size.height = 1;
+
+view.onFrame = function(event) {
+	if(redRect.bounds.size.height < endingSizes.redRect.height - rectGrowRate) {
+		redRect.bounds.size.height += rectGrowRate;	
+	}
+	if(yellowRect.bounds.size.height < endingSizes.yellowRect.height - rectGrowRate) {
+		yellowRect.bounds.size.height += rectGrowRate;
+	}
+	if(greyRect.bounds.size.height < endingSizes.greyRect.height - rectGrowRate) {
+		greyRect.bounds.size.height += rectGrowRate;
+	}
+	if(blueRect.bounds.size.height < endingSizes.blueRect.height - rectGrowRate) {
+		blueRect.bounds.size.height += rectGrowRate/3;
+	}
+}
 
 
 
