@@ -27,10 +27,12 @@ var weizenText = new PointText({
 	fontSize : doppelFontSize/3
 });
 weizenText.rotate(90, weizenText.bounds.topLeft);
+var textGroup = new Group(doppelText, backwardsP, weizenText);
+textGroup.fillColor = new Color(0, 0, 0, 0);
 
 var stemOffset = new Point(16, 0);
 var stemExtension = new Path.Rectangle(weizenText.bounds.topLeft - stemOffset, weizenText.bounds.bottomCenter - stemOffset - new Point(10, 0));
-
+stemExtension.fillColor = new Color(0, 0, 0, 0);
 // Shapes
 var yellowRect = new Path.Rectangle(new Point(-500, doppelText.bounds.bottomLeft.y - stemOffset.x), new Point(stemExtension.bounds.topLeft.x - stemOffset.x, view.bounds.bottomCenter.y + 100));
 yellowRect.fillColor = '#FFF700';
@@ -129,18 +131,6 @@ plantGroup1.children.forEach(shrinkLeaf)
 plantGroup2.children.forEach(shrinkLeaf)
 plantGroup3.children.forEach(shrinkLeaf)
 
-var frameOffsetValue = Math.max(view.bounds.size.width/20, 50)
-var frameOffsetVector = new Point(frameOffsetValue, frameOffsetValue);
-var blackFrame = new Path.Rectangle({
-	from : view.bounds.topLeft + frameOffsetVector, 
-	to : view.bounds.bottomRight - frameOffsetVector,
-	fillColor : null,
-	strokeWidth : 3,
-	strokeColor: 'black'
-});
-blackFrame.rotate(31, view.center);
-blackFrame.scale(.5, view.center);
-
 var endingSizes = {
 	redRect : redRect.bounds.size.clone(),
 	yellowRect : yellowRect.bounds.size.clone(),
@@ -174,6 +164,11 @@ var initialAnimationFinished = {
 	yellowCircle2 : false,
 	yellowCircle3 : false
 }
+
+var stemExtensionEndSize = stemExtension.bounds.size.height;
+stemExtension.bounds.height = 1;
+var alpha = 0;
+
 view.onFrame = function(event) {
 	//Rectangle initial animation
 	if(redRect.bounds.size.height < endingSizes.redRect.height - rectGrowRate) {
@@ -226,6 +221,13 @@ view.onFrame = function(event) {
 		plantGroup1.children.forEach(growLeaf);
 		plantGroup2.children.forEach(growLeaf);
 		plantGroup3.children.forEach(growLeaf);
+		alpha += .01
+		textGroup.fillColor = new Color(0, 0, 0, alpha)
+		stemExtension.fillColor = new Color(0, 0 , 0, alpha)
+		if (stemExtension.bounds.size.height < stemExtensionEndSize) {
+			
+			stemExtension.bounds.size.height += rectGrowRate/2;
+		}
 	}
 
 }
