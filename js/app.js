@@ -129,14 +129,17 @@ plantGroup1.children.forEach(shrinkLeaf)
 plantGroup2.children.forEach(shrinkLeaf)
 plantGroup3.children.forEach(shrinkLeaf)
 
+var frameOffsetValue = Math.max(view.bounds.size.width/20, 50)
+var frameOffsetVector = new Point(frameOffsetValue, frameOffsetValue);
 var blackFrame = new Path.Rectangle({
-	from : view.bounds.topLeft + new Point(20, 20), 
-	to : view.bounds.bottomRight - new Point(20, 20),
+	from : view.bounds.topLeft + frameOffsetVector, 
+	to : view.bounds.bottomRight - frameOffsetVector,
 	fillColor : null,
 	strokeWidth : 3,
 	strokeColor: 'black'
 });
-blackFrame.rotate(31);
+blackFrame.rotate(31, view.center);
+blackFrame.scale(.5, view.center);
 
 var endingSizes = {
 	redRect : redRect.bounds.size.clone(),
@@ -157,7 +160,7 @@ yellowRect.bounds.size.height = 1;
 greyRect.bounds.size.height = 1;
 blueRect.bounds.size.height = 1;
 
-var circleMoveInRate = 3;
+var circleMoveInRate = 6;
 yellowCircle1.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
 yellowCircle2.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
 yellowCircle3.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
