@@ -32,7 +32,7 @@ var stemOffset = new Point(16, 0);
 var stemExtension = new Path.Rectangle(weizenText.bounds.topLeft - stemOffset, weizenText.bounds.bottomCenter - stemOffset - new Point(10, 0));
 
 // Shapes
-var yellowRect = new Path.Rectangle(new Point(-500, doppelText.bounds.bottomLeft.y - stemOffset.x), new Point(stemExtension.bounds.topLeft.x - stemOffset.x, view.bounds.bottomCenter.y + 500));
+var yellowRect = new Path.Rectangle(new Point(-500, doppelText.bounds.bottomLeft.y - stemOffset.x), new Point(stemExtension.bounds.topLeft.x - stemOffset.x, view.bounds.bottomCenter.y + 100));
 yellowRect.fillColor = '#FFF700';
 
 var blueRect = new Path.Rectangle(new Point(stemExtension.bounds.bottomLeft) + new Point(0, 16), new Point(weizenText.bounds.bottomRight)  + new Point(0, 300));
@@ -40,11 +40,11 @@ blueRect.fillColor = '#00C4FF';
 
 var redRect = new Path.Rectangle(
 	new Point(yellowRect.bounds.topRight.x + stemOffset.x + stemExtension.bounds.width + weizenText.bounds.width, doppelText.bounds.bottomLeft.y - stemOffset.x), 
-	view.bounds.bottomRight + new Point(500, 500));
+	view.bounds.bottomRight + new Point(100, 100));
 redRect.fillColor = '#FE0000';
 
 var greyRect = new Path.Rectangle(new Point(stemExtension.bounds.topLeft.x, -100), 
-	new Point(view.bounds.topRight.x + 500, doppelText.bounds.topRight.y));
+	new Point(view.bounds.topRight.x + 100, doppelText.bounds.topRight.y));
 greyRect.fillColor = '#FAFAEE';
 
 var circleRadius = 55;
@@ -118,8 +118,16 @@ function createPlant(bottomCenter, layers) {
 var plantGroup1 = createPlant(yellowRect.bounds.topCenter + new Point(160, 0), 10);
 var plantGroup2 = createPlant(greyRect.bounds.bottomCenter, 5);
 plantGroup2.rotate(180, plantGroup2.bounds.bottomCenter);
-var plantGroup3 = createPlant(redRect.bounds.topLeft + new Point(doppelText.bounds.size.width/2, 0), 6);
+var plantGroup3 = createPlant(new Point(plantGroup2.position.x + 2* plantGroup2.bounds.size.width, redRect.bounds.topCenter.y), 6);
 
+var leafBoundsWidth = plantGroup1.children[0].bounds.size.width;
+var topLeafBoundsHeight = plantGroup1.children[plantGroup1.children.length - 1].bounds.size.height;
+var shrinkLeaf = function(item, idx) {
+	item.scale(.01);
+}
+plantGroup1.children.forEach(shrinkLeaf)
+plantGroup2.children.forEach(shrinkLeaf)
+plantGroup3.children.forEach(shrinkLeaf)
 
 var blackFrame = new Path.Rectangle({
 	from : view.bounds.topLeft + new Point(20, 20), 
@@ -136,25 +144,87 @@ var endingSizes = {
 	greyRect : greyRect.bounds.size.clone(),
 	blueRect : blueRect.bounds.size.clone(),
 }
-var rectGrowRate = 3;
+
+var circleEndingPositions = {
+	yellowCircle1 : yellowCircle1.position.clone(),
+	yellowCircle2 : yellowCircle2.position.clone(),
+	yellowCircle3 : yellowCircle3.position.clone()
+}
+
+var rectGrowRate = 6;
 redRect.bounds.size.height = 1;
 yellowRect.bounds.size.height = 1;
 greyRect.bounds.size.height = 1;
 blueRect.bounds.size.height = 1;
 
+var circleMoveInRate = 3;
+yellowCircle1.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
+yellowCircle2.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
+yellowCircle3.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
+
+var initialAnimationFinished = {
+	redRect : false,
+	blueRect : false,
+	yellowRect : false,
+	greyRect : false,
+	yellowCircle1 : false,
+	yellowCircle2 : false,
+	yellowCircle3 : false
+}
 view.onFrame = function(event) {
+	//Rectangle initial animation
 	if(redRect.bounds.size.height < endingSizes.redRect.height - rectGrowRate) {
 		redRect.bounds.size.height += rectGrowRate;	
+	} else {
+		initialAnimationFinished.redRect = true
 	}
 	if(yellowRect.bounds.size.height < endingSizes.yellowRect.height - rectGrowRate) {
 		yellowRect.bounds.size.height += rectGrowRate;
+	} else {
+		initialAnimationFinished.yellowRect = true
 	}
 	if(greyRect.bounds.size.height < endingSizes.greyRect.height - rectGrowRate) {
 		greyRect.bounds.size.height += rectGrowRate;
+	} else {
+		initialAnimationFinished.greyRect = true
 	}
 	if(blueRect.bounds.size.height < endingSizes.blueRect.height - rectGrowRate) {
 		blueRect.bounds.size.height += rectGrowRate/3;
+	} else {
+		initialAnimationFinished.blueRect = true
 	}
+
+	//Circle initial animation
+	if(yellowCircle1.position.y < circleEndingPositions.yellowCircle1.y) {
+		yellowCircle1.position.y += circleMoveInRate;
+	} else {
+		initialAnimationFinished.yellowCircle1 = true
+	}
+	if(yellowCircle2.position.y < circleEndingPositions.yellowCircle2.y) {
+		yellowCircle2.position.y += circleMoveInRate;
+	} else {
+		initialAnimationFinished.yellowCircle2 = true
+	}
+	if(yellowCircle3.position.y < circleEndingPositions.yellowCircle3.y) {
+		yellowCircle3.position.y += circleMoveInRate;
+	} else {
+		initialAnimationFinished.yellowCircle3 = true
+	}
+
+	// Plant animation
+	if (initialAnimationFinished.redRect 
+		&& initialAnimationFinished.blueRect 
+		&& initialAnimationFinished.greyRect) {
+		var growLeaf = function(item, idx){
+			if(item.bounds.size.width < leafBoundsWidth && item.bounds.size.height < topLeafBoundsHeight) {
+				item.scale(1.1);
+			}
+		}
+		plantGroup1.children.forEach(growLeaf);
+		plantGroup2.children.forEach(growLeaf);
+		plantGroup3.children.forEach(growLeaf);
+	}
+
 }
 
 
