@@ -1,3 +1,4 @@
+view.rotate(-31);
 var doppelFontSize = 150
 project.currentStyle = {
 	fillColor : 'black',
@@ -119,20 +120,6 @@ var plantGroup2 = createPlant(greyRect.bounds.bottomCenter, 5);
 plantGroup2.rotate(180, plantGroup2.bounds.bottomCenter);
 var plantGroup3 = createPlant(redRect.bounds.topLeft + new Point(doppelText.bounds.size.width/2, 0), 6);
 
-var textGroup = new Group(doppelText, weizenText, backwardsP, stemExtension);
-var animationGroup = new Group();
-animationGroup.addChild(plantGroup1);
-animationGroup.addChild(plantGroup2);
-animationGroup.addChild(plantGroup3);
-animationGroup.addChild(textGroup);
-animationGroup.addChild(yellowRect);
-animationGroup.addChild(blueRect);
-animationGroup.addChild(redRect);
-animationGroup.addChild(greyRect);
-animationGroup.addChild(yellowCircle1);
-animationGroup.addChild(yellowCircle2);
-animationGroup.addChild(yellowCircle3);
-animationGroup.rotate(-31, view.center);
 
 var blackFrame = new Path.Rectangle({
 	from : view.bounds.topLeft + new Point(20, 20), 
@@ -141,6 +128,7 @@ var blackFrame = new Path.Rectangle({
 	strokeWidth : 3,
 	strokeColor: 'black'
 });
+blackFrame.rotate(31);
 
 var endingSizes = {
 	redRect : redRect.bounds.size.clone(),
@@ -148,7 +136,7 @@ var endingSizes = {
 	greyRect : greyRect.bounds.size.clone(),
 	blueRect : blueRect.bounds.size.clone(),
 }
-var rectGrowRate = 6;
+var rectGrowRate = 3;
 redRect.bounds.size.height = 1;
 yellowRect.bounds.size.height = 1;
 greyRect.bounds.size.height = 1;
