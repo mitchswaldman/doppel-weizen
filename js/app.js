@@ -9,7 +9,6 @@ project.currentStyle = {
 }
 
 // Text
-
 var doppelText = new PointText(new Point(view.center));
 doppelText.content = 'DOP   EL';
 doppelText.justification = 'center';
@@ -29,6 +28,7 @@ var weizenText = new PointText({
 weizenText.rotate(90, weizenText.bounds.topLeft);
 var textGroup = new Group(doppelText, backwardsP, weizenText);
 textGroup.fillColor = new Color(0, 0, 0, 0);
+
 
 var stemOffset = new Point(16, 0);
 var stemExtension = new Path.Rectangle(weizenText.bounds.topLeft - stemOffset, weizenText.bounds.bottomCenter - stemOffset - new Point(10, 0));
@@ -116,6 +116,15 @@ function createPlant(bottomCenter, layers) {
 }
 
 
+var beerSpeaks =  new PointText({
+	point :  new Point(view.bounds.bottomCenter.x, .7 * view.bounds.bottomCenter.y),
+	content : 'Beer Speaks. People Mumble.',
+	justification : 'center',
+	fontSize : 25
+});
+beerSpeaks.fillColor = new Color(0, 0 ,0, 0);
+beerSpeaks.rotate(31, view.center);
+
 // Group
 var plantGroup1 = createPlant(yellowRect.bounds.topCenter + new Point(160, 0), 10);
 var plantGroup2 = createPlant(greyRect.bounds.bottomCenter, 5);
@@ -168,6 +177,8 @@ var initialAnimationFinished = {
 var stemExtensionEndSize = stemExtension.bounds.size.height;
 stemExtension.bounds.height = 1;
 var alpha = 0;
+var beerAlpha = 0;
+var animationFinished = false;
 
 view.onFrame = function(event) {
 	//Rectangle initial animation
@@ -227,7 +238,14 @@ view.onFrame = function(event) {
 		if (stemExtension.bounds.size.height < stemExtensionEndSize) {
 			
 			stemExtension.bounds.size.height += rectGrowRate/2;
+		} else {
+			animationFinished = true;
 		}
+	}
+
+	if (animationFinished) {
+		beerAlpha += .01;
+		beerSpeaks.fillColor = new Color(0, 0, 0, beerAlpha);
 	}
 
 }
