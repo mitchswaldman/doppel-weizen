@@ -117,10 +117,10 @@ function createPlant(bottomCenter, layers) {
 
 
 var beerSpeaks =  new PointText({
-	point :  new Point(view.bounds.bottomCenter.x, .7 * view.bounds.bottomCenter.y),
-	content : 'Beer Speaks. People Mumble.',
+	point :  view.center,
+	content : 'Beer Speaks. \nPeople Mumble.',
 	justification : 'center',
-	fontSize : 25
+	fontSize : 50
 });
 beerSpeaks.fillColor = new Color(0, 0 ,0, 0);
 beerSpeaks.rotate(31, view.center);
@@ -153,16 +153,21 @@ var circleEndingPositions = {
 	yellowCircle3 : yellowCircle3.position.clone()
 }
 
-var rectGrowRate = 6;
+var rectGrowRate = 4;
 redRect.bounds.size.height = 1;
 yellowRect.bounds.size.height = 1;
 greyRect.bounds.size.height = 1;
 blueRect.bounds.size.height = 1;
 
-var circleMoveInRate = 6;
-yellowCircle1.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
-yellowCircle2.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
-yellowCircle3.position = new Point(yellowCircle1.position.x, -3 * circleRadius)
+redRect.fillColor.alpha = 0;
+yellowRect.fillColor.alpha = 0;
+greyRect.fillColor.alpha = 0;
+blueRect.fillColor.alpha = 0;
+
+var circleMoveInRate = 4;
+yellowCircle1.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
+yellowCircle2.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
+yellowCircle3.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
 
 var initialAnimationFinished = {
 	redRect : false,
@@ -179,8 +184,26 @@ stemExtension.bounds.height = 1;
 var alpha = 0;
 var beerAlpha = 0;
 var animationFinished = false;
-
+var introFinished = false;
 view.onFrame = function(event) {
+	if (!introFinished) {
+		beerSpeaks.fillColor.alpha += .01;
+		if (event.time > 4) {
+			introFinished = true;
+		}
+	} else {
+		if (beerSpeaks.fillColor.alpha > 0) {
+			beerSpeaks.fillColor.alpha -= .01;	
+		}
+		redRect.fillColor.alpha = 1;
+		yellowRect.fillColor.alpha = 1;
+		greyRect.fillColor.alpha = 1;
+		blueRect.fillColor.alpha = 1;
+		mainAnimation();
+	}
+}
+
+function mainAnimation(){
 	//Rectangle initial animation
 	if(redRect.bounds.size.height < endingSizes.redRect.height - rectGrowRate) {
 		redRect.bounds.size.height += rectGrowRate;	
@@ -242,13 +265,6 @@ view.onFrame = function(event) {
 			animationFinished = true;
 		}
 	}
-
-	if (animationFinished) {
-		beerAlpha += .01;
-		beerSpeaks.fillColor = new Color(0, 0, 0, beerAlpha);
-	}
-
 }
-
 
 
