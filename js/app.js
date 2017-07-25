@@ -1,4 +1,5 @@
 view.rotate(-31);
+var INDEX = 0;
 var doppelFontSize = 150
 project.currentStyle = {
 	fillColor : 'black',
@@ -7,7 +8,7 @@ project.currentStyle = {
 	fontFamily : 'Montserrat',
 	fontSize : doppelFontSize
 }
-
+var SHAPES_GROUP = new Group();
 // Text
 var doppelText = new PointText(new Point(view.center));
 doppelText.content = 'DOP   EL';
@@ -33,6 +34,8 @@ textGroup.fillColor = new Color(0, 0, 0, 0);
 var stemOffset = new Point(16, 0);
 var stemExtension = new Path.Rectangle(weizenText.bounds.topLeft - stemOffset, weizenText.bounds.bottomCenter - stemOffset - new Point(10, 0));
 stemExtension.fillColor = new Color(0, 0, 0, 0);
+
+
 // Shapes
 var yellowRect = new Path.Rectangle(new Point(-500, doppelText.bounds.bottomLeft.y - stemOffset.x), new Point(stemExtension.bounds.topLeft.x - stemOffset.x, view.bounds.bottomCenter.y + 100));
 yellowRect.fillColor = '#FFF700';
@@ -66,6 +69,7 @@ var yellowCircle3 = new Path.Circle({
 	fillColor : '#FFF700'
 })
 
+SHAPES_GROUP.addChildren([redRect, yellowRect, blueRect, greyRect, yellowCircle1, yellowCircle2, yellowCircle3]);
 // Plants
 function createPlant(bottomCenter, layers) {
 	var plantGroup = new Group();
@@ -140,6 +144,10 @@ plantGroup1.children.forEach(shrinkLeaf)
 plantGroup2.children.forEach(shrinkLeaf)
 plantGroup3.children.forEach(shrinkLeaf)
 
+doppelText.bringToFront();
+weizenText.bringToFront();
+stemExtension.bringToFront();
+
 var endingSizes = {
 	redRect : redRect.bounds.size.clone(),
 	yellowRect : yellowRect.bounds.size.clone(),
@@ -169,6 +177,8 @@ yellowCircle1.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
 yellowCircle2.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
 yellowCircle3.position = new Point(yellowCircle1.position.x, -4 * circleRadius)
 
+textGroup.bringToFront();
+
 var initialAnimationFinished = {
 	redRect : false,
 	blueRect : false,
@@ -185,13 +195,16 @@ var alpha = 0;
 var beerAlpha = 0;
 var animationFinished = false;
 var introFinished = false;
+
+var pathsToMove = [];
+
 view.onFrame = function(event) {
 	if (!introFinished) {
 		beerSpeaks.fillColor.alpha += .01;
 		if (event.time > 4) {
 			introFinished = true;
 		}
-	} else {
+	} else if(!animationFinished) {
 		if (beerSpeaks.fillColor.alpha > 0) {
 			beerSpeaks.fillColor.alpha -= .01;	
 		}
@@ -200,7 +213,144 @@ view.onFrame = function(event) {
 		greyRect.fillColor.alpha = 1;
 		blueRect.fillColor.alpha = 1;
 		mainAnimation();
+	} else {
+		INDEX = INDEX % MAX_SHAPES;
+		if (pathsToMove.length == 0) {
+			//initialize array with the shapes in the initial animation
+			pathsToMove.push(createPathToMoveFromExistingPath(redRect));
+			pathsToMove.push(createPathToMoveFromExistingPath(blueRect));
+			pathsToMove.push(createPathToMoveFromExistingPath(greyRect));
+			pathsToMove.push(createPathToMoveFromExistingPath(yellowRect));
+			pathsToMove.push(createPathToMoveFromExistingPath(yellowCircle1));
+			pathsToMove.push(createPathToMoveFromExistingPath(yellowCircle2));
+			pathsToMove.push(createPathToMoveFromExistingPath(yellowCircle3));
+		}
+		//Check to see if shape intersects other shapes and create intersection
+		moveShapes();
+		intersections.forEach(function(item){item.remove();})
+		intersections = [];
+		for(i = 0; i < pathsToMove.length; i++) {
+			var path = pathsToMove[i].path;
+			for(j = i + 1; j < pathsToMove.length; j++) {
+				var otherPath = pathsToMove[j].path;
+				if(path.intersects(otherPath)) {
+					var result = path.intersect(otherPath);
+					result.fillColor = intersectionColors[pathsToMove[j].index % intersectionColors.length];
+					intersections.push(result);
+				}
+			}
+		}
+		
 	}
+}
+var intersectionColors = ['#a142f4', '#f441bb', '#41f483'];
+var intersections = [];
+var i, j;
+function checkIntersections() {
+	//debugger;
+
+}
+
+var fromLeft = true;
+var fromTop = true;
+var leftBounds = [-100, 0];
+var rightBounds = [view.bounds.size.width, view.bounds.size.width + 100];
+var topBounds = [-100, 0];
+var bottomBounds = [view.bounds.size.height, view.bounds.size.height + 100];
+
+var xCoordinates = [0, view.bounds.size.width/4, view.bounds.size.width/2, 3*view.bounds.size.width/4, view.bounds.size.width]
+var bottomPoints = xCoordinates.map(function(xVal) {return new Point(xVal, view.bounds.size.height + 100)});
+var topPoints = xCoordinates.map(function(xVal){return new Point(xVal, -0)});
+
+function generateRandomPoint() {
+	//debugger;
+	var point = fromTop ? topPoints[getRandomInt(0, topPoints.length)] : bottomPoints[getRandomInt(0, bottomPoints.length)]
+	fromLeft = !fromLeft;
+	fromTop =  !fromTop;
+	return point;
+}
+
+function getRandomInt(min, max) {
+	//debugger;
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
+function createPathToMoveFromExistingPath(path) {
+	//debugger;
+	var newPath = {
+		path : path,
+		start : path.position,
+		finish : generateRandomPoint(),
+		fading : false,
+		done : false,
+		index : INDEX++
+	}
+	newPath.unitVector = getMovementVector(newPath); 
+	return newPath;
+}
+
+function getMovementVector(pathToMove) {
+	var vector = pathToMove.finish - pathToMove.start;
+	var vectorNorm = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
+	return vector/vectorNorm; 
+}
+
+function generatePathToMoveFromNewPath(path) {
+	path.fillColor = fillColors[getRandomInt(0, fillColors.length)];
+	path.fillColor.alpha = 1;
+	path.position = generateRandomPoint();
+	var newPath = {
+		path : path,
+		start : path.position,
+		finish : generateRandomPoint(),
+		fading : false,
+		done : false,
+		index : INDEX++
+	}
+	SHAPES_GROUP.addChild(path);
+	newPath.unitVector = getMovementVector(newPath);
+	return newPath;
+}
+
+var MAX_SHAPES = 15;
+var fillColors = ['#FFF700', '#00C4FF', '#FE0000'];
+
+function moveShapes() {
+	//debugger;
+	
+	pathsToMove = pathsToMove.filter(function(path){ 
+		if (path.done) {
+			path.path.remove();
+		}
+		return !path.done;
+	});
+
+	while (pathsToMove.length < MAX_SHAPES) {
+		var random = getRandomInt(0, 10);
+		if(random % 2 == 0) {
+			var radius = getRandomInt(circleRadius, 2*circleRadius);
+			pathsToMove.push(generatePathToMoveFromNewPath(new Path.Circle({radius : radius})));
+		} else {
+			var height = getRandomInt(100, 300);
+			var width = getRandomInt(200, 400);
+			pathsToMove.push(generatePathToMoveFromNewPath(new Path.Rectangle({width: width, height:height})));
+		}
+	}
+	pathsToMove.forEach(function(path, idx){
+		// Move shape along its vector
+		path.path.position += path.unitVector;
+
+		
+		if(path.fading) {
+			path.path.fillColor.alpha = path.path.fillColor.alpha - .01;
+			path.done = path.path.fillColor.alpha == 0;
+		} else if (path.path.position.getDistance(path.finish)<1) {
+			path.fading = true;
+		}
+
+	});
 }
 
 function mainAnimation(){
