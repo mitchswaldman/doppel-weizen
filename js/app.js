@@ -314,7 +314,7 @@ function generatePathToMoveFromNewPath(path) {
 	return newPath;
 }
 
-var MAX_SHAPES = 20;
+var MAX_SHAPES = 15;
 var fillColors = ['#FFF700', '#00C4FF', '#FE0000'];
 
 function moveShapes() {
